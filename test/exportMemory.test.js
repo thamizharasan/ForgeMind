@@ -22,15 +22,16 @@ test("export codex preserves unmanaged AGENTS.md content", () => {
   const content = fs.readFileSync(file, "utf8");
   assert.equal(result.outputPath, ".codex/AGENTS.md");
   assert.match(content, /^before/);
-  assert.match(content, /CODEX-TOKEN-SAVER:CODEX:START/);
+  assert.match(content, /FORGEMIND:CODEX:START/);
+  assert.match(content, /\.forgemind\/context-pack\.md/);
 });
 
 test("export cursor creates .cursor/rules/forgemind.mdc", () => {
   const root = tempRoot();
   runMemoryExport(root, "cursor");
   const content = read(root, ".cursor/rules/forgemind.mdc");
-  assert.match(content, /CODEX-TOKEN-SAVER:CURSOR:START/);
-  assert.match(content, /\.codex\/memory\/sessions\.md/);
+  assert.match(content, /FORGEMIND:CURSOR:START/);
+  assert.match(content, /\.forgemind\/memory\/sessions\.md/);
 });
 
 test("export claude preserves existing CLAUDE.md content", () => {
@@ -39,15 +40,15 @@ test("export claude preserves existing CLAUDE.md content", () => {
   runMemoryExport(root, "claude");
   const content = read(root, "CLAUDE.md");
   assert.match(content, /^manual notes/);
-  assert.match(content, /CODEX-TOKEN-SAVER:CLAUDE:START/);
+  assert.match(content, /FORGEMIND:CLAUDE:START/);
 });
 
 test("export copilot creates .github/copilot-instructions.md", () => {
   const root = tempRoot();
   runMemoryExport(root, "copilot");
   const content = read(root, ".github/copilot-instructions.md");
-  assert.match(content, /CODEX-TOKEN-SAVER:COPILOT:START/);
-  assert.match(content, /\.codex\/context\/index\.json/);
+  assert.match(content, /FORGEMIND:COPILOT:START/);
+  assert.match(content, /\.forgemind\/context\/index\.json/);
 });
 
 test("export all creates all supported agents", () => {
@@ -69,7 +70,7 @@ test("export doctor passes for valid exports", () => {
 test("export doctor fails for malformed one-sided markers", () => {
   const root = tempRoot();
   const file = path.join(root, "CLAUDE.md");
-  fs.writeFileSync(file, "<!-- CODEX-TOKEN-SAVER:CLAUDE:START -->\n", "utf8");
+  fs.writeFileSync(file, "<!-- FORGEMIND:CLAUDE:START -->\n", "utf8");
   assert.equal(runMemoryExportDoctor(root).ok, false);
 });
 

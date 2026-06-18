@@ -30,11 +30,10 @@
   "main": "./src/extension/extension.cjs",
   "bin": {
     "forgemind": "bin/forgemind.js",
-    "fgm": "bin/forgemind.js",
-    "codex-context-init": "bin/codex-context-init.js"
+    "fgm": "bin/forgemind.js"
   },
   "scripts": {
-    "check": "node --check bin/forgemind.js && node --check bin/codex-context-init.js && node --check src/core.js && node --check src/extension/extension.cjs",
+    "check": "node --check bin/forgemind.js && node --check src/core.js && node --check src/extension/extension.cjs",
     "test": "node --test"
   },
   "engines": {
@@ -59,15 +58,7 @@
       },
       {
         "command": "forgemind.upgradeAgents",
-        "title": "ForgeMind: Upgrade AGENTS.md"
-      },
-      {
-        "command": "forgemind.setupGlobal",
-        "title": "ForgeMind: Setup Codex Instructions"
-      },
-      {
-        "command": "forgemind.doctorGlobal",
-        "title": "ForgeMind: Doctor Codex Instructions"
+        "title": "ForgeMind: Upgrade Instructions"
       },
       {
         "command": "forgemind.indexWorkspace",
@@ -175,12 +166,12 @@
         "forgemind.sessionTracking.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable best-effort session event logging to .codex/memory/sessions.md."
+          "description": "Enable best-effort session event logging to .forgemind/memory/sessions.md."
         },
         "forgemind.contextPack.maxSizeKb": {
           "type": "number",
           "default": 40,
-          "description": "Maximum size, in KB, for generated .codex/context-pack.md."
+          "description": "Maximum size, in KB, for generated .forgemind/context-pack.md."
         }
       }
     }

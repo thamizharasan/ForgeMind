@@ -20,7 +20,7 @@ test("doctor fails when a Phase 2 artifact is missing", () => {
   const root = tempRoot();
   fs.writeFileSync(path.join(root, "app.js"), "export const app = 1;\n", "utf8");
   runIndex(root);
-  fs.rmSync(path.join(root, ".codex", "context", "routes.md"));
+  fs.rmSync(path.join(root, ".forgemind", "context", "routes.md"));
   assert.equal(runContextDoctor(root).ok, false);
 });
 

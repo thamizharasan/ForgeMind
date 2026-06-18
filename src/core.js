@@ -16,11 +16,8 @@ import {
   DEFAULT_SESSION_TRACKING_ENABLED,
   DEPENDENCY_FILES,
   GENERATOR_VERSION,
-  GLOBAL_END,
-  GLOBAL_START,
   HEAVY_DIRS,
-  OLD_END,
-  OLD_START,
+  INSTRUCTIONS_FILE,
   PROJECT_END,
   PROJECT_START,
   RELEVANT_EXTENSIONS,
@@ -32,12 +29,15 @@ import {
   SECRET_FILE_NAMES,
   SECRET_PREFIXES,
   SECRET_SUFFIXES,
+  STORAGE_DIR,
   contextFiles,
-  globalManagedBlock,
   MEMORY_FILES,
   memoryFiles,
   projectManagedBlock,
   requiredFiles,
+  storageDisplayPath,
+  storagePath,
+  storageRelativePath,
   templates
 } from "./core/utils/config.js";
 import { parseFile } from "./core/parsers/index.js";
@@ -49,23 +49,19 @@ import { writeImpact } from "./core/graph/graphImpact.js";
 import { queryGraph, writeQuery } from "./core/graph/graphQuery.js";
 
 export {
-  GLOBAL_END,
-  GLOBAL_START,
-  OLD_END,
-  OLD_START,
+  INSTRUCTIONS_FILE,
   PROJECT_END,
   PROJECT_START,
+  STORAGE_DIR,
   contextFiles,
-  globalManagedBlock,
   memoryFiles,
   projectManagedBlock,
-  requiredFiles
+  requiredFiles,
+  storageDisplayPath,
+  storagePath,
+  storageRelativePath
 } from "./core/utils/config.js";
 export { createLogger, ensureDir, fileExists, writeFileAtomic, writeFileForce, writeFileIfMissing };
-
-export function getGlobalAgentsPath() {
-  return path.join(os.homedir(), ".codex", "AGENTS.md");
-}
 
 function newlineOf(content) {
   return content.includes("\r\n") ? "\r\n" : "\n";
@@ -96,17 +92,13 @@ export function upsertManagedBlock(existingContent, startMarker, endMarker, newB
   return { ok: true, content: finish(next, newline), action: existingContent ? "appended" : "created" };
 }
 
-function migrateOldProjectMarkers(content) {
-  return content.replace(OLD_START, PROJECT_START).replace(OLD_END, PROJECT_END);
-}
-
 function filesFor(root) {
   return {
-    [path.join(root, ".codex", "AGENTS.md")]: projectManagedBlock,
-    [path.join(root, ".codex", "templates", "project_context.template.md")]: templates["project_context.md"],
-    [path.join(root, ".codex", "templates", "architecture.template.md")]: templates["architecture.md"],
-    [path.join(root, ".codex", "templates", "task.template.md")]: templates["task.md"],
-    [path.join(root, ".codex", "templates", "decision_log.template.md")]: templates["decision_log.md"],
+    [storagePath(root, INSTRUCTIONS_FILE)]: projectManagedBlock,
+    [storagePath(root, "templates", "project_context.template.md")]: templates["project_context.md"],
+    [storagePath(root, "templates", "architecture.template.md")]: templates["architecture.md"],
+    [storagePath(root, "templates", "task.template.md")]: templates["task.md"],
+    [storagePath(root, "templates", "decision_log.template.md")]: templates["decision_log.md"],
     [path.join(root, "project_context.md")]: templates["project_context.md"],
     [path.join(root, "architecture.md")]: templates["architecture.md"],
     [path.join(root, "task.md")]: templates["task.md"],
@@ -138,6 +130,10 @@ export function runSync(root = process.cwd()) {
   for (const [file, content] of Object.entries(filesFor(root))) {
     if (writeFileIfMissing(file, content)) created += 1;
   }
+  ensureDir(storagePath(root, "context"));
+  ensureDir(storagePath(root, "memory"));
+  ensureDir(storagePath(root, "graph"));
+  ensureDir(storagePath(root, "logs"));
   return withSessionTracking(root, "sync", { ok: true, action: "sync", root, created, durationMs: Date.now() - started, warnings: [] });
 }
 
@@ -153,11 +149,11 @@ export function runDoctor(root = process.cwd()) {
   const project = runProjectDoctor(root);
   const optional = [
     { file: "sessionTracking", found: true, line: `OK session tracking ${DEFAULT_SESSION_TRACKING_ENABLED ? "enabled" : "disabled"}` },
-    { file: path.join(".codex", "memory", "sessions.md"), found: true, line: `${fileExists(memoryPathFor(root, "sessions.md")) ? "OK" : "MISSING"} .codex/memory/sessions.md ${fileExists(memoryPathFor(root, "sessions.md")) ? "found" : "missing optional"}` },
-    { file: path.join(".codex", "memory", "decisions.md"), found: true, line: `${fileExists(memoryPathFor(root, "decisions.md")) ? "OK" : "MISSING"} .codex/memory/decisions.md ${fileExists(memoryPathFor(root, "decisions.md")) ? "found" : "missing optional"}` },
-    { file: path.join(".codex", "memory", "failures.md"), found: true, line: `${fileExists(memoryPathFor(root, "failures.md")) ? "OK" : "MISSING"} .codex/memory/failures.md ${fileExists(memoryPathFor(root, "failures.md")) ? "found" : "missing optional"}` },
-    { file: path.join(".codex", CONTEXT_PACK_FILE), found: true, line: `${fileExists(contextPackPathFor(root)) ? "OK" : "MISSING"} .codex/context-pack.md ${fileExists(contextPackPathFor(root)) ? "found" : "missing optional"}` },
-    { file: path.join(".codex", "memory", SESSION_SUMMARY_FILE), found: true, line: `${fileExists(memoryPathFor(root, SESSION_SUMMARY_FILE)) ? "OK" : "INFO"} .codex/memory/session_summary.md ${fileExists(memoryPathFor(root, SESSION_SUMMARY_FILE)) ? "found" : "missing optional"}` },
+    { file: storageRelativePath("memory", "sessions.md"), found: true, line: `${fileExists(memoryPathFor(root, "sessions.md")) ? "OK" : "MISSING"} ${storageDisplayPath("memory", "sessions.md")} ${fileExists(memoryPathFor(root, "sessions.md")) ? "found" : "missing optional"}` },
+    { file: storageRelativePath("memory", "decisions.md"), found: true, line: `${fileExists(memoryPathFor(root, "decisions.md")) ? "OK" : "MISSING"} ${storageDisplayPath("memory", "decisions.md")} ${fileExists(memoryPathFor(root, "decisions.md")) ? "found" : "missing optional"}` },
+    { file: storageRelativePath("memory", "failures.md"), found: true, line: `${fileExists(memoryPathFor(root, "failures.md")) ? "OK" : "MISSING"} ${storageDisplayPath("memory", "failures.md")} ${fileExists(memoryPathFor(root, "failures.md")) ? "found" : "missing optional"}` },
+    { file: storageRelativePath(CONTEXT_PACK_FILE), found: true, line: `${fileExists(contextPackPathFor(root)) ? "OK" : "MISSING"} ${storageDisplayPath(CONTEXT_PACK_FILE)} ${fileExists(contextPackPathFor(root)) ? "found" : "missing optional"}` },
+    { file: storageRelativePath("memory", SESSION_SUMMARY_FILE), found: true, line: `${fileExists(memoryPathFor(root, SESSION_SUMMARY_FILE)) ? "OK" : "INFO"} ${storageDisplayPath("memory", SESSION_SUMMARY_FILE)} ${fileExists(memoryPathFor(root, SESSION_SUMMARY_FILE)) ? "found" : "missing optional"}` },
     { file: "llm", found: true, line: `INFO local LLM ${DEFAULT_LLM_PROVIDER} ${DEFAULT_LLM_MODEL} ${DEFAULT_LLM_BASE_URL}` }
   ];
   return { ...project, results: [...project.results, ...optional] };
@@ -165,8 +161,8 @@ export function runDoctor(root = process.cwd()) {
 
 export function runProjectUpgrade(root = process.cwd()) {
   const started = Date.now();
-  const file = path.join(root, ".codex", "AGENTS.md");
-  const existing = fileExists(file) ? migrateOldProjectMarkers(fs.readFileSync(file, "utf8")) : "";
+  const file = path.join(root, STORAGE_DIR, INSTRUCTIONS_FILE);
+  const existing = fileExists(file) ? fs.readFileSync(file, "utf8") : "";
   const result = upsertManagedBlock(existing, PROJECT_START, PROJECT_END, projectManagedBlock);
   if (!result.ok) throw new Error(result.error);
   writeFileForce(file, result.content);
@@ -175,28 +171,6 @@ export function runProjectUpgrade(root = process.cwd()) {
 
 export function runUpgrade(root = process.cwd()) {
   return runProjectUpgrade(root);
-}
-
-export function runGlobalSetup() {
-  const started = Date.now();
-  const file = getGlobalAgentsPath();
-  const existing = fileExists(file) ? fs.readFileSync(file, "utf8") : "";
-  const result = upsertManagedBlock(existing, GLOBAL_START, GLOBAL_END, globalManagedBlock);
-  if (!result.ok) throw new Error(result.error);
-  writeFileForce(file, result.content);
-  return { ok: true, command: "global", action: result.action, file, durationMs: Date.now() - started, warnings: [] };
-}
-
-export function runGlobalDoctor() {
-  const file = getGlobalAgentsPath();
-  const exists = fileExists(file);
-  const content = exists ? fs.readFileSync(file, "utf8") : "";
-  const hasBlock = content.includes(GLOBAL_START) && content.includes(GLOBAL_END);
-  const results = [
-    { found: exists, line: `${exists ? "OK" : "MISSING"} ~/.codex/AGENTS.md ${exists ? "found" : "missing"}` },
-    { found: hasBlock, line: `${hasBlock ? "OK" : "MISSING"} global managed block ${hasBlock ? "found" : "missing"}` }
-  ];
-  return { ok: results.every((result) => result.found), results };
 }
 
 function isSecretFile(name) {
@@ -245,7 +219,7 @@ export function isIgnoredPath(relativePath) {
 }
 
 function isIgnoredContextPath(relativeParts) {
-  return relativeParts.length >= 2 && relativeParts[0] === ".codex" && relativeParts[1] === "context";
+  return relativeParts.length >= 2 && relativeParts[0] === STORAGE_DIR && relativeParts[1] === "context";
 }
 
 export function isLikelyBinary(buffer) {
@@ -658,7 +632,7 @@ function gitBranch(root) {
 }
 
 function contextDirFor(root) {
-  return path.join(root, ".codex", "context");
+  return storagePath(root, "context");
 }
 
 function indexPathFor(root) {
@@ -670,7 +644,7 @@ function relevantPathFor(root) {
 }
 
 function memoryDirFor(root) {
-  return path.join(root, ".codex", "memory");
+  return storagePath(root, "memory");
 }
 
 function memoryPathFor(root, file) {
@@ -678,7 +652,7 @@ function memoryPathFor(root, file) {
 }
 
 function contextPackPathFor(root) {
-  return path.join(root, ".codex", CONTEXT_PACK_FILE);
+  return storagePath(root, CONTEXT_PACK_FILE);
 }
 
 function agentOutputPath(root, adapter) {
@@ -724,7 +698,7 @@ function resultArtifacts(root, result) {
     for (const item of result.results) if (item.outputPath) artifacts.push(item.outputPath);
   }
   if (result?.action === "index") artifacts.push(...contextFiles.map(toDisplayPath));
-  if (result?.action === "graph-build") artifacts.push(".codex/graph/graph.json", ".codex/graph/graph.md");
+  if (result?.action === "graph-build") artifacts.push(storageDisplayPath("graph", "graph.json"), storageDisplayPath("graph", "graph.md"));
   return [...new Set(artifacts)].filter(Boolean);
 }
 
@@ -937,7 +911,7 @@ export function runMemoryDoctor(root = process.cwd()) {
   const dir = memoryDirFor(root);
   const dirFound = fileExists(dir) && fs.statSync(dir).isDirectory();
   const results = [
-    { file: path.join(".codex", "memory"), found: dirFound, line: `${dirFound ? "OK" : "MISSING"} .codex/memory ${dirFound ? "found" : "missing"}` }
+    { file: storageRelativePath("memory"), found: dirFound, line: `${dirFound ? "OK" : "MISSING"} ${storageDisplayPath("memory")} ${dirFound ? "found" : "missing"}` }
   ];
   for (const file of memoryFiles) {
     const target = path.join(root, file);
@@ -982,7 +956,7 @@ export function runContextPack(root = process.cwd(), options = {}) {
     action: "context-pack",
     root,
     file,
-    outputPath: ".codex/context-pack.md",
+    outputPath: storageDisplayPath(CONTEXT_PACK_FILE),
     sizeBytes: Buffer.byteLength(output, "utf8"),
     maxSizeKb,
     durationMs: Date.now() - started,
@@ -1097,8 +1071,8 @@ export function runMemoryExportDoctor(root = process.cwd()) {
       results.push({ agent: adapter.id, found: true, line: `INFO ${adapter.outputPath} has no managed export` });
       continue;
     }
-    const hasMemory = [".codex/memory/sessions.md", ".codex/memory/decisions.md", ".codex/memory/failures.md"].every((item) => content.includes(item));
-    const hasContext = [".codex/context/relevant.md", ".codex/context/summary.md", ".codex/context/index.json"].every((item) => content.includes(item));
+    const hasMemory = [storageDisplayPath("memory", "sessions.md"), storageDisplayPath("memory", "decisions.md"), storageDisplayPath("memory", "failures.md")].every((item) => content.includes(item));
+    const hasContext = [storageDisplayPath("context", RELEVANT_CONTEXT_FILE), storageDisplayPath("context", "summary.md"), storageDisplayPath("context", "index.json")].every((item) => content.includes(item));
     const ok = markersValid && hasStart && hasMemory && hasContext;
     results.push({
       agent: adapter.id,
@@ -1147,18 +1121,18 @@ export function runGraphDoctor(root = process.cwd()) {
       graphValid = false;
     }
   }
-  const agentsPath = path.join(root, ".codex", "AGENTS.md");
+  const agentsPath = storagePath(root, INSTRUCTIONS_FILE);
   const agentsContent = fileExists(agentsPath) ? readText(agentsPath) : "";
-  const agentsReferencesGraph = [".codex/graph/impact.md", ".codex/graph/query.md", ".codex/graph/graph.md", ".codex/graph/graph.json"].every((item) => agentsContent.includes(item));
+  const agentsReferencesGraph = [storageDisplayPath("graph", "impact.md"), storageDisplayPath("graph", "query.md"), storageDisplayPath("graph", "graph.md"), storageDisplayPath("graph", "graph.json")].every((item) => agentsContent.includes(item));
   const results = [
-    { file: path.join(".codex", "graph", "graph.json"), found: fileExists(jsonPath), line: `${fileExists(jsonPath) ? "OK" : "MISSING"} .codex/graph/graph.json ${fileExists(jsonPath) ? "found" : "missing"}` },
+    { file: storageRelativePath("graph", "graph.json"), found: fileExists(jsonPath), line: `${fileExists(jsonPath) ? "OK" : "MISSING"} ${storageDisplayPath("graph", "graph.json")} ${fileExists(jsonPath) ? "found" : "missing"}` },
     { file: "graph.json", found: graphValid, line: `${graphValid ? "OK" : "MISSING"} graph.json valid` },
     { file: "schemaVersion", found: schemaVersion, line: `${schemaVersion ? "OK" : "MISSING"} graph schemaVersion` },
     { file: "generatedAt", found: generatedAt, line: `${generatedAt ? "OK" : "MISSING"} graph generatedAt` },
     { file: "entityCount", found: entityCount, line: `${entityCount ? "OK" : "MISSING"} entityCount number` },
     { file: "relationshipCount", found: relationshipCount, line: `${relationshipCount ? "OK" : "MISSING"} relationshipCount number` },
-    { file: path.join(".codex", "graph", "graph.md"), found: fileExists(mdPath), line: `${fileExists(mdPath) ? "OK" : "MISSING"} .codex/graph/graph.md ${fileExists(mdPath) ? "found" : "missing"}` },
-    { file: path.join(".codex", "AGENTS.md"), found: agentsReferencesGraph, line: `${agentsReferencesGraph ? "OK" : "MISSING"} .codex/AGENTS.md references graph files` }
+    { file: storageRelativePath("graph", "graph.md"), found: fileExists(mdPath), line: `${fileExists(mdPath) ? "OK" : "MISSING"} ${storageDisplayPath("graph", "graph.md")} ${fileExists(mdPath) ? "found" : "missing"}` },
+    { file: storageRelativePath(INSTRUCTIONS_FILE), found: agentsReferencesGraph, line: `${agentsReferencesGraph ? "OK" : "MISSING"} ${storageDisplayPath(INSTRUCTIONS_FILE)} references graph files` }
   ];
   return { ok: results.every((result) => result.found), action: "graph doctor", results };
 }
@@ -1176,7 +1150,7 @@ export function runGraphImpact(root = process.cwd(), target) {
   if (!target || !target.trim()) throw new Error("Graph impact target is required.");
   const graph = readGraph(root);
   const report = writeImpact(root, graph, target.trim());
-  return withSessionTracking(root, "graph impact", { ok: true, action: "graph impact", target, outputPath: path.join(".codex", "graph", "impact.md"), report, durationMs: Date.now() - started, warnings: [] });
+  return withSessionTracking(root, "graph impact", { ok: true, action: "graph impact", target, outputPath: storageRelativePath("graph", "impact.md"), report, durationMs: Date.now() - started, warnings: [] });
 }
 
 export function runGraphQuery(root = process.cwd(), question) {
@@ -1185,7 +1159,7 @@ export function runGraphQuery(root = process.cwd(), question) {
   const graph = readGraph(root);
   const result = queryGraph(graph, question);
   const report = writeQuery(root, question, result);
-  return withSessionTracking(root, "graph query", { ok: true, action: "graph query", question, outputPath: path.join(".codex", "graph", "query.md"), matches: result.matches, intent: result.intent, report, durationMs: Date.now() - started, warnings: [] });
+  return withSessionTracking(root, "graph query", { ok: true, action: "graph query", question, outputPath: storageRelativePath("graph", "query.md"), matches: result.matches, intent: result.intent, report, durationMs: Date.now() - started, warnings: [] });
 }
 
 function readIndex(root) {
@@ -1210,7 +1184,7 @@ export function generateSummary(index) {
 }
 
 export function writeContextArtifacts(root, index) {
-  const contextDir = path.join(root, ".codex", "context");
+  const contextDir = storagePath(root, "context");
   const files = index._files || [];
   const artifacts = {
     "index.json": JSON.stringify({
@@ -1309,7 +1283,7 @@ export function runContextDoctor(root = process.cwd()) {
     const found = fileExists(path.join(root, file));
     return { file, found, line: `${found ? "OK" : "MISSING"} ${file} ${found ? "found" : "missing"}` };
   });
-  const indexPath = path.join(root, ".codex", "context", "index.json");
+  const indexPath = storagePath(root, "context", "index.json");
   let indexValid = false;
   let schemaVersion = "unavailable";
   let generatedAt = "unavailable";
@@ -1330,7 +1304,7 @@ export function runContextDoctor(root = process.cwd()) {
       fileCount = "invalid index.json";
     }
   }
-  const agentsPath = path.join(root, ".codex", "AGENTS.md");
+  const agentsPath = storagePath(root, INSTRUCTIONS_FILE);
   const agentsReferencesContext = fileExists(agentsPath) && readText(agentsPath).includes("Precomputed Context Engine");
   const relevantPath = relevantPathFor(root);
   const relevantReadable = !fileExists(relevantPath) || fs.statSync(relevantPath).isFile();
@@ -1342,14 +1316,14 @@ export function runContextDoctor(root = process.cwd()) {
     { file: "generatedAt", found: !generatedAt.startsWith("invalid") && generatedAt !== "unavailable", line: `${!generatedAt.startsWith("invalid") && generatedAt !== "unavailable" ? "OK" : "MISSING"} generatedAt ${generatedAt}` },
     { file: "secrets", found: noSecretsIndexed, line: `${noSecretsIndexed ? "OK" : "MISSING"} no secret files indexed` },
     {
-      file: path.join(".codex", "AGENTS.md"),
+      file: storageRelativePath(INSTRUCTIONS_FILE),
       found: agentsReferencesContext,
-      line: `${agentsReferencesContext ? "OK" : "MISSING"} .codex/AGENTS.md references context engine`
+      line: `${agentsReferencesContext ? "OK" : "MISSING"} ${storageDisplayPath(INSTRUCTIONS_FILE)} references context engine`
     },
     {
-      file: path.join(".codex", "context", RELEVANT_CONTEXT_FILE),
+      file: storageRelativePath("context", RELEVANT_CONTEXT_FILE),
       found: relevantReadable,
-      line: `${fileExists(relevantPath) ? "OK" : "INFO"} .codex/context/relevant.md ${fileExists(relevantPath) ? "readable" : "missing optional"}`
+      line: `${fileExists(relevantPath) ? "OK" : "INFO"} ${storageDisplayPath("context", RELEVANT_CONTEXT_FILE)} ${fileExists(relevantPath) ? "readable" : "missing optional"}`
     }
   ];
   return { ok: results.every((result) => result.found), results };
@@ -1357,7 +1331,7 @@ export function runContextDoctor(root = process.cwd()) {
 
 export function runContextClean(root = process.cwd()) {
   const started = Date.now();
-  const dir = path.join(root, ".codex", "context");
+  const dir = storagePath(root, "context");
   if (!fileExists(dir)) return { ok: true, action: "context-clean", removed: false, dir, durationMs: Date.now() - started, warnings: [] };
   fs.rmSync(dir, { recursive: true, force: true });
   return { ok: true, action: "context-clean", removed: true, dir, durationMs: Date.now() - started, warnings: [] };
@@ -1406,7 +1380,7 @@ export function runQuery(root = process.cwd(), question, options = {}) {
     action: "query",
     question,
     topCount,
-    relevantPath: path.join(".codex", "context", RELEVANT_CONTEXT_FILE),
+    relevantPath: storageRelativePath("context", RELEVANT_CONTEXT_FILE),
     matches,
     durationMs: Date.now() - started,
     warnings: []
@@ -1414,8 +1388,7 @@ export function runQuery(root = process.cwd(), question, options = {}) {
 }
 
 export function runDebug(root = process.cwd()) {
-  const globalAgentsPath = getGlobalAgentsPath();
-  const projectAgentsPath = path.join(root, ".codex", "AGENTS.md");
+  const projectAgentsPath = storagePath(root, INSTRUCTIONS_FILE);
   const contextDoctor = runContextDoctor(root);
   const projectDoctor = runProjectDoctor(root);
   const graphDoctor = runGraphDoctor(root);
@@ -1425,8 +1398,7 @@ export function runDebug(root = process.cwd()) {
     { line: `OS ${os.platform()} ${os.release()}`, found: true },
     { line: `Node ${process.version}`, found: true },
     { line: "CLI version 0.1.0", found: true },
-    { line: `${fileExists(globalAgentsPath) ? "OK" : "MISSING"} global AGENTS ${globalAgentsPath}`, found: fileExists(globalAgentsPath) },
-    { line: `${fileExists(projectAgentsPath) ? "OK" : "MISSING"} project AGENTS ${projectAgentsPath}`, found: fileExists(projectAgentsPath) },
+    { line: `${fileExists(projectAgentsPath) ? "OK" : "MISSING"} ForgeMind instructions ${projectAgentsPath}`, found: fileExists(projectAgentsPath) },
     { line: `${contextDoctor.ok ? "OK" : "MISSING"} context status`, found: contextDoctor.ok },
     { line: `${graphDoctor.ok ? "OK" : "MISSING"} graph status`, found: true },
     { line: `OK session tracking ${DEFAULT_SESSION_TRACKING_ENABLED ? "enabled" : "disabled"}`, found: true },
@@ -1438,7 +1410,7 @@ export function runDebug(root = process.cwd()) {
     { line: `Local LLM ${DEFAULT_LLM_PROVIDER} ${DEFAULT_LLM_MODEL} ${DEFAULT_LLM_BASE_URL}`, found: true },
     { line: `${relevantExists ? "OK" : "MISSING"} relevant.md ${relevantExists ? "present" : "missing"}`, found: true },
     { line: `relevant.md modified ${relevantExists ? fs.statSync(relevantPath).mtime.toISOString() : "n/a"}`, found: true },
-    { line: `Log location ${path.join(root, ".codex", "logs", "latest.log")}`, found: true }
+    { line: `Log location ${storagePath(root, "logs", "latest.log")}`, found: true }
   ];
   const ok = results.every((result) => result.found) && projectDoctor.ok;
   return { ok, action: "debug", root, results, durationMs: 0, warnings: [] };

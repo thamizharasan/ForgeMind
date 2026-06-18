@@ -1,11 +1,21 @@
 import path from "node:path";
 
-export const OLD_START = "<!-- CODEX-CONTEXT-INIT:START -->";
-export const OLD_END = "<!-- CODEX-CONTEXT-INIT:END -->";
-export const PROJECT_START = "<!-- CODEX-CONTEXT-INIT:PROJECT:START -->";
-export const PROJECT_END = "<!-- CODEX-CONTEXT-INIT:PROJECT:END -->";
-export const GLOBAL_START = "<!-- CODEX-CONTEXT-INIT:GLOBAL:START -->";
-export const GLOBAL_END = "<!-- CODEX-CONTEXT-INIT:GLOBAL:END -->";
+export const PROJECT_START = "<!-- FORGEMIND:PROJECT:START -->";
+export const PROJECT_END = "<!-- FORGEMIND:PROJECT:END -->";
+
+export const STORAGE_DIR = ".forgemind";
+export const INSTRUCTIONS_FILE = "instructions.md";
+export function storageRelativePath(...parts) {
+  return path.join(STORAGE_DIR, ...parts);
+}
+
+export function storageDisplayPath(...parts) {
+  return [STORAGE_DIR, ...parts].join("/");
+}
+
+export function storagePath(root, ...parts) {
+  return path.join(root, STORAGE_DIR, ...parts);
+}
 
 export const DEFAULT_MAX_FILE_SIZE_KB = 300;
 export const DEFAULT_CONTEXT_PACK_MAX_SIZE_KB = 40;
@@ -23,24 +33,24 @@ export const MEMORY_FILES = ["sessions.md", "decisions.md", "failures.md", "fixe
 export const SESSION_SUMMARY_FILE = "session_summary.md";
 export const GRAPH_FILES = ["graph.json", "graph.md", "impact.md"];
 export const CROSS_AGENT_CONTEXT_ORDER = [
-  ".codex/context-pack.md",
-  ".codex/context/relevant.md",
-  ".codex/graph/impact.md",
-  ".codex/graph/query.md",
-  ".codex/graph/graph.md",
-  ".codex/memory/sessions.md",
-  ".codex/memory/decisions.md",
-  ".codex/memory/failures.md",
-  ".codex/memory/fixes.md",
-  ".codex/memory/rationale.md",
-  ".codex/context/summary.md",
-  ".codex/context/dependencies.md",
-  ".codex/context/files.md",
-  ".codex/context/symbols.md",
-  ".codex/context/routes.md",
-  ".codex/context/recent_changes.md",
-  ".codex/context/index.json",
-  ".codex/graph/graph.json"
+  ".forgemind/context-pack.md",
+  ".forgemind/context/relevant.md",
+  ".forgemind/graph/impact.md",
+  ".forgemind/graph/query.md",
+  ".forgemind/graph/graph.md",
+  ".forgemind/memory/sessions.md",
+  ".forgemind/memory/decisions.md",
+  ".forgemind/memory/failures.md",
+  ".forgemind/memory/fixes.md",
+  ".forgemind/memory/rationale.md",
+  ".forgemind/context/summary.md",
+  ".forgemind/context/dependencies.md",
+  ".forgemind/context/files.md",
+  ".forgemind/context/symbols.md",
+  ".forgemind/context/routes.md",
+  ".forgemind/context/recent_changes.md",
+  ".forgemind/context/index.json",
+  ".forgemind/graph/graph.json"
 ];
 export const SECRET_FILE_NAMES = new Set([".env", "id_rsa", "id_ed25519"]);
 export const SECRET_PREFIXES = [".env.", "secrets.", "credentials."];
@@ -50,71 +60,20 @@ export const RELEVANT_EXTENSIONS = new Set([".js", ".jsx", ".ts", ".tsx", ".mjs"
 export const RELEVANT_FILE_NAMES = new Set([...DEPENDENCY_FILES.map((file) => file.toLowerCase()), "dockerfile"]);
 
 export const requiredFiles = [
-  path.join(".codex", "AGENTS.md"),
-  path.join(".codex", "templates", "project_context.template.md"),
-  path.join(".codex", "templates", "architecture.template.md"),
-  path.join(".codex", "templates", "task.template.md"),
-  path.join(".codex", "templates", "decision_log.template.md"),
+  storageRelativePath(INSTRUCTIONS_FILE),
+  storageRelativePath("templates", "project_context.template.md"),
+  storageRelativePath("templates", "architecture.template.md"),
+  storageRelativePath("templates", "task.template.md"),
+  storageRelativePath("templates", "decision_log.template.md"),
   "project_context.md",
   "architecture.md",
   "task.md",
   "decision_log.md"
 ];
 
-export const contextFiles = CONTEXT_FILES.map((file) => path.join(".codex", "context", file));
-export const memoryFiles = MEMORY_FILES.map((file) => path.join(".codex", "memory", file));
-export const graphFiles = GRAPH_FILES.map((file) => path.join(".codex", "graph", file));
-
-export const globalManagedBlock = `${GLOBAL_START}
-# Global Codex Repository Intelligence Rules
-
-Use ForgeMind generated repository intelligence before broad source exploration.
-
-## Global Behavior
-
-- Complete coding tasks with targeted source reads, smallest practical diffs, and concise useful responses.
-- Do not explain unless explicitly asked.
-- Do not teach.
-- Do not summarize the repository.
-- Do not restate the user request.
-- Do not provide alternatives unless blocked.
-- Do not create long plans.
-- Ask clarifying questions only when the task is impossible or unsafe without one.
-
-## Context Usage
-
-- Read the minimum files required.
-- Prefer targeted search over broad exploration.
-- Never scan the whole repository unless explicitly requested.
-- Stop reading once enough context is found.
-- Use open files, visible errors, and user-provided context first.
-
-## Editing
-
-- Make the smallest correct change.
-- Prefer local fixes over refactors.
-- Reuse existing patterns.
-- Do not rename, reformat, or reorganize unrelated code.
-- Avoid dependency changes unless essential.
-
-## Validation
-
-- Run only the narrowest relevant check.
-- Prefer targeted tests over full test suites.
-- If validation is skipped, say why in one short sentence.
-
-## Response Format
-
-Return only:
-
-CHANGED
-- path/to/file
-
-VALIDATION
-- command or "not run"
-
-DONE
-${GLOBAL_END}`;
+export const contextFiles = CONTEXT_FILES.map((file) => storageRelativePath("context", file));
+export const memoryFiles = MEMORY_FILES.map((file) => storageRelativePath("memory", file));
+export const graphFiles = GRAPH_FILES.map((file) => storageRelativePath("graph", file));
 
 export const projectManagedBlock = `${PROJECT_START}
 # Project ForgeMind Rules
@@ -125,9 +84,9 @@ Before broad repository search, read these generated context files if present:
 
 ${CROSS_AGENT_CONTEXT_ORDER.map((file, index) => `${index + 1}. ${file}`).join("\n")}
 
-If \`.codex/context/relevant.md\` exists, treat it as the task-specific context shortlist generated from the user's latest query.
-Use \`.codex/graph/*\` as generated relationship and impact context for files, symbols, routes, dependencies, and memory links.
-Use \`.codex/memory/*\` as persistent repository memory for decisions, sessions, failures, fixes, rationale, and handoff notes.
+If \`.forgemind/context/relevant.md\` exists, treat it as the task-specific context shortlist generated from the user's latest query.
+Use \`.forgemind/graph/*\` as generated relationship and impact context for files, symbols, routes, dependencies, and memory links.
+Use \`.forgemind/memory/*\` as persistent repository memory for decisions, sessions, failures, fixes, rationale, and handoff notes.
 
 Use these as pre-indexed repository context.
 

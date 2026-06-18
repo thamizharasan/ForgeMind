@@ -77,12 +77,12 @@ flowchart TD
 flowchart LR
     A[Repository] --> B[ForgeMind Engine]
     B --> C[Repository Intelligence]
-    C --> D[.codex/context]
-    C --> E[.codex/graph]
+    C --> D[.forgemind/context]
+    C --> E[.forgemind/graph]
     B --> F[Persistent Memory]
-    F --> G[.codex/memory]
+    F --> G[.forgemind/memory]
     B --> H[Context Pack]
-    H --> I[.codex/context-pack.md]
+    H --> I[.forgemind/context-pack.md]
     B --> J[Agent Exports]
     J --> K[.codex/AGENTS.md]
     J --> L[.cursor/rules/forgemind.mdc]
@@ -140,14 +140,14 @@ npx forgemind ask "what breaks if I change authentication?"
 | Command | What it does |
 | --- | --- |
 | `forgemind init` | Safely syncs project files, upgrades instructions, creates memory, indexes the repository, builds the graph, generates a context pack, and prints a doctor summary. |
-| `forgemind index` | Generates `.codex/context/*` artifacts. |
-| `forgemind ask "<question>"` | Generates task-specific `.codex/context/relevant.md` from the existing index. |
-| `forgemind pack` | Generates `.codex/context-pack.md` from context, graph, and memory artifacts. |
+| `forgemind index` | Generates `.forgemind/context/*` artifacts. |
+| `forgemind ask "<question>"` | Generates task-specific `.forgemind/context/relevant.md` from the existing index. |
+| `forgemind pack` | Generates `.forgemind/context-pack.md` from context, graph, and memory artifacts. |
 | `forgemind memory` | Accesses session, decision, failure, compression, and memory doctor commands. |
 | `forgemind graph` | Builds, queries, inspects, or cleans the knowledge graph. |
 | `forgemind export` | Exports context and memory pointers to supported AI agents. |
 | `forgemind doctor` | Checks project setup and optional memory/context-pack status. |
-| `forgemind debug` | Prints OS, Node, CLI, AGENTS, context, graph, memory, and log diagnostics. |
+| `forgemind debug` | Prints OS, Node, CLI, instruction, context, graph, memory, and log diagnostics. |
 
 `fgm` is an alias for `forgemind`.
 
@@ -156,20 +156,20 @@ npx forgemind ask "what breaks if I change authentication?"
 | Command | Purpose |
 | --- | --- |
 | `forgemind context doctor` | Validate generated context artifacts. |
-| `forgemind context clean` | Delete only `.codex/context`. |
+| `forgemind context clean` | Delete only `.forgemind/context`. |
 | `forgemind context pack` | Alias for `forgemind pack`. |
-| `forgemind memory snapshot` | Append a session snapshot to `.codex/memory/sessions.md`. |
+| `forgemind memory snapshot` | Append a session snapshot to `.forgemind/memory/sessions.md`. |
 | `forgemind memory decision "<text>" --reason "<reason>" --files "<files>"` | Record a durable decision. |
 | `forgemind memory failure "<text>" --cause "<cause>" --fix "<fix>" --files "<files>"` | Record a failed attempt and useful fix notes. |
 | `forgemind memory compress --provider ollama --model qwen3:4b` | Explicitly compress `context-pack.md` with local Ollama. |
 | `forgemind memory compress doctor` | Check optional local Ollama compression. |
 | `forgemind memory doctor` | Validate repository memory files. |
-| `forgemind graph build` | Build `.codex/graph/graph.json` and `.codex/graph/graph.md`. |
-| `forgemind graph impact <file-or-symbol>` | Generate `.codex/graph/impact.md`. |
-| `forgemind graph query "<question>"` | Generate `.codex/graph/query.md`. |
+| `forgemind graph build` | Build `.forgemind/graph/graph.json` and `.forgemind/graph/graph.md`. |
+| `forgemind graph impact <file-or-symbol>` | Generate `.forgemind/graph/impact.md`. |
+| `forgemind graph query "<question>"` | Generate `.forgemind/graph/query.md`. |
 | `forgemind graph doctor` | Validate graph artifacts. |
-| `forgemind graph clean` | Delete only `.codex/graph`. |
-| `forgemind export codex` | Update `.codex/AGENTS.md` managed export block. |
+| `forgemind graph clean` | Delete only `.forgemind/graph`. |
+| `forgemind export codex` | Update `.codex/AGENTS.md` managed export block for Codex. |
 | `forgemind export cursor` | Write `.cursor/rules/forgemind.mdc`. |
 | `forgemind export claude` | Update `CLAUDE.md` managed export block. |
 | `forgemind export copilot` | Update `.github/copilot-instructions.md` managed export block. |
@@ -178,34 +178,33 @@ npx forgemind ask "what breaks if I change authentication?"
 | `forgemind sync` | Create missing project context files without overwriting existing files. |
 | `forgemind upgrade` | Update only the managed project instruction block. |
 
-Compatibility note: `codex-context-init` remains as a deprecated alias that delegates to `forgemind`.
-
 ## Generated Files
 
-ForgeMind currently stores repository intelligence under `.codex/` for compatibility with existing agent workflows. Future releases may support configurable storage locations.
+ForgeMind stores repository intelligence under `.forgemind/`. Agent exports are optional. Codex is one supported export target, not the default identity. No migration from the old project is included because ForgeMind is a new standalone product.
 
 | File | Purpose |
 | --- | --- |
-| `.codex/AGENTS.md` | Project instructions for agents that read AGENTS.md. |
-| `.codex/context/index.json` | Machine-readable deterministic index. |
-| `.codex/context/summary.md` | Compact repository overview. |
-| `.codex/context/files.md` | Human-readable file map. |
-| `.codex/context/symbols.md` | Detected symbols, exports, components, classes, functions, and headings. |
-| `.codex/context/dependencies.md` | Dependency and script summary. |
-| `.codex/context/routes.md` | Heuristic route hints. |
-| `.codex/context/recent_changes.md` | `git status --short` when available. |
-| `.codex/context/relevant.md` | Task-specific shortlist generated by `forgemind ask`. |
-| `.codex/context-pack.md` | Compact agent-friendly context bundle. |
-| `.codex/memory/sessions.md` | Automated and manual session records. |
-| `.codex/memory/decisions.md` | Durable decisions. |
-| `.codex/memory/failures.md` | Failed attempts, causes, fixes, and affected files. |
-| `.codex/memory/fixes.md` | Fix notes. |
-| `.codex/memory/rationale.md` | Durable rationale and handoff notes. |
-| `.codex/memory/session_summary.md` | Optional local LLM-compressed session summary. |
-| `.codex/graph/graph.json` | Machine-readable repository knowledge graph. |
-| `.codex/graph/graph.md` | Human-readable graph summary. |
-| `.codex/graph/impact.md` | Impact report for a file or symbol. |
-| `.codex/graph/query.md` | Deterministic graph query report. |
+| `.forgemind/instructions.md` | ForgeMind-owned project instructions. |
+| `.forgemind/context/index.json` | Machine-readable deterministic index. |
+| `.forgemind/context/summary.md` | Compact repository overview. |
+| `.forgemind/context/files.md` | Human-readable file map. |
+| `.forgemind/context/symbols.md` | Detected symbols, exports, components, classes, functions, and headings. |
+| `.forgemind/context/dependencies.md` | Dependency and script summary. |
+| `.forgemind/context/routes.md` | Heuristic route hints. |
+| `.forgemind/context/recent_changes.md` | `git status --short` when available. |
+| `.forgemind/context/relevant.md` | Task-specific shortlist generated by `forgemind ask`. |
+| `.forgemind/context-pack.md` | Compact agent-friendly context bundle. |
+| `.forgemind/memory/sessions.md` | Automated and manual session records. |
+| `.forgemind/memory/decisions.md` | Durable decisions. |
+| `.forgemind/memory/failures.md` | Failed attempts, causes, fixes, and affected files. |
+| `.forgemind/memory/fixes.md` | Fix notes. |
+| `.forgemind/memory/rationale.md` | Durable rationale and handoff notes. |
+| `.forgemind/memory/session_summary.md` | Optional local LLM-compressed session summary. |
+| `.forgemind/graph/graph.json` | Machine-readable repository knowledge graph. |
+| `.forgemind/graph/graph.md` | Human-readable graph summary. |
+| `.forgemind/graph/impact.md` | Impact report for a file or symbol. |
+| `.forgemind/graph/query.md` | Deterministic graph query report. |
+| `.codex/AGENTS.md` | Optional Codex export; points to `.forgemind/` artifacts. |
 | `.cursor/rules/forgemind.mdc` | Cursor export. |
 | `CLAUDE.md` | Claude Code export. |
 | `.github/copilot-instructions.md` | GitHub Copilot export. |

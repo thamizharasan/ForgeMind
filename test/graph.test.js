@@ -13,7 +13,7 @@ function tempRoot() {
 }
 
 function graph(root) {
-  return JSON.parse(fs.readFileSync(path.join(root, ".codex", "graph", "graph.json"), "utf8"));
+  return JSON.parse(fs.readFileSync(path.join(root, ".forgemind", "graph", "graph.json"), "utf8"));
 }
 
 function setupGraphProject() {
@@ -31,8 +31,8 @@ test("graph build creates graph.json and graph.md", () => {
   const root = setupGraphProject();
   const result = runGraphBuild(root);
   assert.equal(result.ok, true);
-  assert.ok(fs.existsSync(path.join(root, ".codex", "graph", "graph.json")));
-  assert.ok(fs.existsSync(path.join(root, ".codex", "graph", "graph.md")));
+  assert.ok(fs.existsSync(path.join(root, ".forgemind", "graph", "graph.json")));
+  assert.ok(fs.existsSync(path.join(root, ".forgemind", "graph", "graph.md")));
 });
 
 test("graph.json has stable entity IDs and deduplicates entities", () => {
@@ -48,9 +48,9 @@ test("graph.json has stable entity IDs and deduplicates entities", () => {
 test("graph.json is stable across unchanged builds", () => {
   const root = setupGraphProject();
   runGraphBuild(root);
-  const first = fs.readFileSync(path.join(root, ".codex", "graph", "graph.json"), "utf8");
+  const first = fs.readFileSync(path.join(root, ".forgemind", "graph", "graph.json"), "utf8");
   runGraphBuild(root);
-  const second = fs.readFileSync(path.join(root, ".codex", "graph", "graph.json"), "utf8");
+  const second = fs.readFileSync(path.join(root, ".forgemind", "graph", "graph.json"), "utf8");
   assert.equal(first, second);
 });
 
@@ -91,7 +91,7 @@ test("graph impact creates impact.md", () => {
   runGraphBuild(root);
   const result = runGraphImpact(root, "src/auth/login.js");
   assert.equal(result.ok, true);
-  assert.match(fs.readFileSync(path.join(root, ".codex", "graph", "impact.md"), "utf8"), /loginUser/);
+  assert.match(fs.readFileSync(path.join(root, ".forgemind", "graph", "impact.md"), "utf8"), /loginUser/);
 });
 
 test("graph query handles what breaks if I change auth", () => {
@@ -99,7 +99,7 @@ test("graph query handles what breaks if I change auth", () => {
   runGraphBuild(root);
   const result = runGraphQuery(root, "what breaks if I change auth");
   assert.equal(result.intent, "impact");
-  assert.ok(fs.existsSync(path.join(root, ".codex", "graph", "query.md")));
+  assert.ok(fs.existsSync(path.join(root, ".forgemind", "graph", "query.md")));
 });
 
 test("graph artifacts redact secrets and source-like memory lines", () => {
@@ -107,8 +107,8 @@ test("graph artifacts redact secrets and source-like memory lines", () => {
   runMemoryAddDecision(root, "Do not store API_TOKEN=abc123456789 from .env.local\nexport function leaked() {}");
   runGraphBuild(root);
   runGraphQuery(root, "why API_TOKEN=abc123456789 .env.local");
-  const json = fs.readFileSync(path.join(root, ".codex", "graph", "graph.json"), "utf8");
-  const query = fs.readFileSync(path.join(root, ".codex", "graph", "query.md"), "utf8");
+  const json = fs.readFileSync(path.join(root, ".forgemind", "graph", "graph.json"), "utf8");
+  const query = fs.readFileSync(path.join(root, ".forgemind", "graph", "query.md"), "utf8");
   assert.doesNotMatch(json, /API_TOKEN=abc|\.env|export function leaked/);
   assert.doesNotMatch(query, /API_TOKEN=abc|\.env/);
 });
@@ -123,42 +123,42 @@ test("graph doctor passes after build", () => {
   assert.equal(runGraphDoctor(root).ok, true);
 });
 
-test("graph clean deletes only .codex/graph", () => {
+test("graph clean deletes only .forgemind/graph", () => {
   const root = setupGraphProject();
   runGraphBuild(root);
-  fs.mkdirSync(path.join(root, ".codex", "memory"), { recursive: true });
-  fs.writeFileSync(path.join(root, ".codex", "memory", "sessions.md"), "# Sessions\n", "utf8");
+  fs.mkdirSync(path.join(root, ".forgemind", "memory"), { recursive: true });
+  fs.writeFileSync(path.join(root, ".forgemind", "memory", "sessions.md"), "# Sessions\n", "utf8");
   runGraphClean(root);
-  assert.equal(fs.existsSync(path.join(root, ".codex", "graph")), false);
-  assert.equal(fs.existsSync(path.join(root, ".codex", "context")), true);
-  assert.equal(fs.existsSync(path.join(root, ".codex", "memory")), true);
-  assert.equal(fs.existsSync(path.join(root, ".codex", "AGENTS.md")), true);
+  assert.equal(fs.existsSync(path.join(root, ".forgemind", "graph")), false);
+  assert.equal(fs.existsSync(path.join(root, ".forgemind", "context")), true);
+  assert.equal(fs.existsSync(path.join(root, ".forgemind", "memory")), true);
+  assert.equal(fs.existsSync(path.join(root, ".forgemind", "instructions.md")), true);
 });
 
 test("AGENTS.md references graph files", () => {
-  assert.ok(projectManagedBlock.includes(".codex/graph/impact.md"));
-  assert.ok(projectManagedBlock.includes(".codex/graph/graph.json"));
+  assert.ok(projectManagedBlock.includes(".forgemind/graph/impact.md"));
+  assert.ok(projectManagedBlock.includes(".forgemind/graph/graph.json"));
 });
 
 test("AGENTS.md references graph files in correct order", () => {
   const ordered = [
-    ".codex/context/relevant.md",
-    ".codex/graph/impact.md",
-    ".codex/graph/query.md",
-    ".codex/graph/graph.md",
-    ".codex/memory/sessions.md",
-    ".codex/memory/decisions.md",
-    ".codex/memory/failures.md",
-    ".codex/memory/fixes.md",
-    ".codex/memory/rationale.md",
-    ".codex/context/summary.md",
-    ".codex/context/dependencies.md",
-    ".codex/context/files.md",
-    ".codex/context/symbols.md",
-    ".codex/context/routes.md",
-    ".codex/context/recent_changes.md",
-    ".codex/context/index.json",
-    ".codex/graph/graph.json"
+    ".forgemind/context/relevant.md",
+    ".forgemind/graph/impact.md",
+    ".forgemind/graph/query.md",
+    ".forgemind/graph/graph.md",
+    ".forgemind/memory/sessions.md",
+    ".forgemind/memory/decisions.md",
+    ".forgemind/memory/failures.md",
+    ".forgemind/memory/fixes.md",
+    ".forgemind/memory/rationale.md",
+    ".forgemind/context/summary.md",
+    ".forgemind/context/dependencies.md",
+    ".forgemind/context/files.md",
+    ".forgemind/context/symbols.md",
+    ".forgemind/context/routes.md",
+    ".forgemind/context/recent_changes.md",
+    ".forgemind/context/index.json",
+    ".forgemind/graph/graph.json"
   ];
   for (let i = 1; i < ordered.length; i += 1) {
     assert.ok(projectManagedBlock.indexOf(ordered[i - 1]) < projectManagedBlock.indexOf(ordered[i]));

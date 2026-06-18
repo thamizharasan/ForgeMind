@@ -18,7 +18,7 @@ function tempRoot() {
 test("memory snapshot creates sessions.md", () => {
   const root = tempRoot();
   const result = runMemorySnapshot(root);
-  const file = path.join(root, ".codex", "memory", "sessions.md");
+  const file = path.join(root, ".forgemind", "memory", "sessions.md");
   assert.equal(result.ok, true);
   assert.ok(fs.existsSync(file));
   assert.match(fs.readFileSync(file, "utf8"), /Git Status/);
@@ -27,14 +27,14 @@ test("memory snapshot creates sessions.md", () => {
 test("add-decision appends to decisions.md", () => {
   const root = tempRoot();
   runMemoryAddDecision(root, "Use deterministic repository memory.");
-  const content = fs.readFileSync(path.join(root, ".codex", "memory", "decisions.md"), "utf8");
+  const content = fs.readFileSync(path.join(root, ".forgemind", "memory", "decisions.md"), "utf8");
   assert.match(content, /Use deterministic repository memory/);
 });
 
 test("add-failure appends to failures.md", () => {
   const root = tempRoot();
   runMemoryAddFailure(root, { failure: "Index failed", cause: "bad JSON", fix: "skip invalid file", files: "package.json" });
-  const content = fs.readFileSync(path.join(root, ".codex", "memory", "failures.md"), "utf8");
+  const content = fs.readFileSync(path.join(root, ".forgemind", "memory", "failures.md"), "utf8");
   assert.match(content, /Index failed/);
   assert.match(content, /bad JSON/);
   assert.match(content, /skip invalid file/);
@@ -49,7 +49,7 @@ test("memory entries redact secret files and token-like values", () => {
     fix: "remove ghp_abcdefghijklmnop",
     files: ".env.local"
   });
-  const content = fs.readFileSync(path.join(root, ".codex", "memory", "failures.md"), "utf8");
+  const content = fs.readFileSync(path.join(root, ".forgemind", "memory", "failures.md"), "utf8");
   assert.doesNotMatch(content, /\.env/);
   assert.doesNotMatch(content, /API_TOKEN=abc/);
   assert.doesNotMatch(content, /ghp_/);
@@ -58,11 +58,11 @@ test("memory entries redact secret files and token-like values", () => {
 
 test("memory snapshot redacts relevant.md summary", () => {
   const root = tempRoot();
-  const contextDir = path.join(root, ".codex", "context");
+  const contextDir = path.join(root, ".forgemind", "context");
   fs.mkdirSync(contextDir, { recursive: true });
   fs.writeFileSync(path.join(contextDir, "relevant.md"), "# Relevant Context\n\nQuery: API_TOKEN=abc123456789 .env.local\n", "utf8");
   runMemorySnapshot(root);
-  const content = fs.readFileSync(path.join(root, ".codex", "memory", "sessions.md"), "utf8");
+  const content = fs.readFileSync(path.join(root, ".forgemind", "memory", "sessions.md"), "utf8");
   assert.doesNotMatch(content, /API_TOKEN=abc/);
   assert.doesNotMatch(content, /\.env/);
   assert.match(content, /\[redacted secret/);
@@ -79,7 +79,7 @@ test("memory doctor passes after memory setup", () => {
 });
 
 test("AGENTS project block references memory files", () => {
-  assert.ok(projectManagedBlock.includes(".codex/memory/sessions.md"));
-  assert.ok(projectManagedBlock.indexOf(".codex/context/relevant.md") < projectManagedBlock.indexOf(".codex/memory/sessions.md"));
-  assert.ok(projectManagedBlock.indexOf(".codex/memory/rationale.md") < projectManagedBlock.indexOf(".codex/context/summary.md"));
+  assert.ok(projectManagedBlock.includes(".forgemind/memory/sessions.md"));
+  assert.ok(projectManagedBlock.indexOf(".forgemind/context/relevant.md") < projectManagedBlock.indexOf(".forgemind/memory/sessions.md"));
+  assert.ok(projectManagedBlock.indexOf(".forgemind/memory/rationale.md") < projectManagedBlock.indexOf(".forgemind/context/summary.md"));
 });

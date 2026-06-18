@@ -4,7 +4,7 @@ export const cursorAdapter = {
   id: "cursor",
   name: "Cursor",
   outputPath: ".cursor/rules/forgemind.mdc",
-  startMarker: "<!-- CODEX-TOKEN-SAVER:CURSOR:START -->",
-  endMarker: "<!-- CODEX-TOKEN-SAVER:CURSOR:END -->",
+  startMarker: "<!-- FORGEMIND:CURSOR:START -->",
+  endMarker: "<!-- FORGEMIND:CURSOR:END -->",
   buildContent: (state) => buildAgentContent("Cursor", state)
 };

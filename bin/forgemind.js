@@ -11,8 +11,6 @@ import {
   runContextIndex,
   runContextPack,
   runDoctor,
-  runGlobalDoctor,
-  runGlobalSetup,
   runGraphBuild,
   runGraphClean,
   runGraphDoctor,
@@ -61,7 +59,6 @@ Advanced:
   forgemind new <project-name> [--force]
   forgemind context <doctor|clean|pack>
   forgemind project <upgrade|doctor>
-  forgemind global [doctor]
   forgemind sync
   forgemind upgrade`);
   process.exit(code);
@@ -117,7 +114,7 @@ try {
       const sync = runSync();
       logger.info(`Created ${sync.created} missing file(s)`);
       const upgrade = runProjectUpgrade();
-      logger.info(`${upgrade.action === "created" ? "Created" : "Updated"} .codex/AGENTS.md`);
+      logger.info(`${upgrade.action === "created" ? "Created" : "Updated"} .forgemind/instructions.md`);
       const snapshot = runMemorySnapshot(process.cwd(), { validationStatus: "ForgeMind init in progress." });
       logger.info(`Updated ${path.relative(process.cwd(), snapshot.file)}`);
       const index = runContextIndex();
@@ -134,21 +131,10 @@ try {
       logger.info(`Created ${result.root}`);
       break;
     }
-    case "global": {
-      if (subcommand === "doctor") {
-        const result = runGlobalDoctor();
-        for (const item of result.results) logger.info(item.line);
-        process.exit(result.ok ? 0 : 1);
-      }
-      if (subcommand) usage(1);
-      const result = runGlobalSetup();
-      logger.info(`${result.action === "created" ? "Created" : "Updated"} ~/.codex/AGENTS.md`);
-      break;
-    }
     case "project": {
       if (subcommand === "upgrade") {
         const result = runProjectUpgrade();
-        logger.info(`${result.action === "created" ? "Created" : "Updated"} .codex/AGENTS.md`);
+        logger.info(`${result.action === "created" ? "Created" : "Updated"} .forgemind/instructions.md`);
         break;
       }
       if (subcommand === "doctor") {
@@ -175,7 +161,7 @@ try {
       }
       if (subcommand === "clean") {
         const result = runContextClean();
-        logger.info(`${result.removed ? "Removed" : "No context directory at"} .codex/context`);
+        logger.info(`${result.removed ? "Removed" : "No context directory at"} .forgemind/context`);
         break;
       }
       if (subcommand === "pack") {
@@ -214,7 +200,7 @@ try {
       }
       if (subcommand === "clean") {
         const result = runGraphClean();
-        logger.info(`${result.removed ? "Removed" : "No graph directory at"} .codex/graph`);
+        logger.info(`${result.removed ? "Removed" : "No graph directory at"} .forgemind/graph`);
         break;
       }
       if (subcommand === "query") {
@@ -332,7 +318,7 @@ try {
     }
     case "upgrade": {
       const result = runUpgrade();
-      logger.info(`${result.action === "created" ? "Created" : "Updated"} .codex/AGENTS.md`);
+      logger.info(`${result.action === "created" ? "Created" : "Updated"} .forgemind/instructions.md`);
       break;
     }
     default:

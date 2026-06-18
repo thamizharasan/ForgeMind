@@ -12,7 +12,7 @@ function tempRoot() {
 
 test("upgrade preserves unmanaged content", () => {
   const root = tempRoot();
-  const file = path.join(root, ".codex", "AGENTS.md");
+  const file = path.join(root, ".forgemind", "instructions.md");
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, `before\n${PROJECT_START}\nold\n${PROJECT_END}\nafter\n`, "utf8");
   runProjectUpgrade(root);

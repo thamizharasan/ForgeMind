@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { GRAPH_SCHEMA_VERSION, ENTITY_TYPES, RELATIONSHIP_TYPES } from "./graphTypes.js";
-import { MEMORY_FILES } from "../utils/config.js";
+import { MEMORY_FILES, storageDisplayPath, storagePath } from "../utils/config.js";
 
 function toDisplayPath(file) {
   return file.split(path.sep).join("/");
@@ -56,7 +56,7 @@ function readMemoryEntries(root) {
     "rationale.md": ENTITY_TYPES.MEMORY_FIX
   };
   for (const file of MEMORY_FILES) {
-    const full = path.join(root, ".codex", "memory", file);
+    const full = storagePath(root, "memory", file);
     if (!fs.existsSync(full)) continue;
     const content = fs.readFileSync(full, "utf8");
     const sections = content.split(/\n(?=##\s+)/).filter((section) => section.trim().startsWith("## "));
@@ -67,7 +67,7 @@ function readMemoryEntries(root) {
         id: entityId(typeByFile[file], `${file}#${index + 1}`),
         type: typeByFile[file],
         name: redactText(title || `${file} ${index + 1}`),
-        path: toDisplayPath(path.join(".codex", "memory", file)),
+        path: storageDisplayPath("memory", file),
         text: memorySummary(section).slice(0, 1000)
       });
     });
@@ -88,7 +88,7 @@ function memoryRelationType(type) {
 }
 
 export function buildGraphFromIndex(root) {
-  const indexPath = path.join(root, ".codex", "context", "index.json");
+  const indexPath = storagePath(root, "context", "index.json");
   if (!fs.existsSync(indexPath)) throw new Error("Context index not found. Run `forgemind index` first.");
   const index = readJson(indexPath);
   const entities = new Map();

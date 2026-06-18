@@ -16,3 +16,14 @@ test("sync does not overwrite files", () => {
   runSync(root);
   assert.equal(fs.readFileSync(file, "utf8"), "custom task");
 });
+
+test("sync creates ForgeMind storage and not legacy storage", () => {
+  const root = tempRoot();
+  runSync(root);
+  assert.equal(fs.existsSync(path.join(root, ".forgemind", "instructions.md")), true);
+  assert.equal(fs.existsSync(path.join(root, ".forgemind", "context")), true);
+  assert.equal(fs.existsSync(path.join(root, ".forgemind", "memory")), true);
+  assert.equal(fs.existsSync(path.join(root, ".forgemind", "graph")), true);
+  assert.equal(fs.existsSync(path.join(root, ".forgemind", "logs")), true);
+  assert.equal(fs.existsSync(path.join(root, ".codex")), false);
+});

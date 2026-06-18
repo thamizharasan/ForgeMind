@@ -4,7 +4,7 @@ export const claudeAdapter = {
   id: "claude",
   name: "Claude Code",
   outputPath: "CLAUDE.md",
-  startMarker: "<!-- CODEX-TOKEN-SAVER:CLAUDE:START -->",
-  endMarker: "<!-- CODEX-TOKEN-SAVER:CLAUDE:END -->",
+  startMarker: "<!-- FORGEMIND:CLAUDE:START -->",
+  endMarker: "<!-- FORGEMIND:CLAUDE:END -->",
   buildContent: (state) => buildAgentContent("Claude Code", state)
 };

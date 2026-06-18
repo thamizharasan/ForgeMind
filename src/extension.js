@@ -6,8 +6,6 @@ import {
   runContextDoctor,
   runContextIndex,
   runContextPack,
-  runGlobalDoctor,
-  runGlobalSetup,
   runGraphBuild,
   runGraphClean,
   runGraphDoctor,
@@ -99,7 +97,7 @@ export function activate(context) {
       const graph = runGraphBuild(root, { sessionTracking: sessionTracking() });
       const pack = runContextPack(root, { maxSizeKb: contextPackMaxSizeKb(), sessionTracking: sessionTracking() });
       output.appendLine(`Created ${sync.created} missing file(s)`);
-      output.appendLine(`${upgrade.action} .codex/AGENTS.md`);
+      output.appendLine(`${upgrade.action} .forgemind/instructions.md`);
       output.appendLine(`Updated ${path.relative(root, snapshot.file)}`);
       output.appendLine(`Indexed ${index.filesIndexed} file(s)`);
       output.appendLine(`Built graph with ${graph.entityCount} entities and ${graph.relationshipCount} relationships`);
@@ -121,19 +119,7 @@ export function activate(context) {
     })),
     vscode.commands.registerCommand("forgemind.upgradeAgents", () => handleCommand(logger, () => {
       const result = runProjectUpgrade(requireWorkspace());
-      vscode.window.showInformationMessage(`ForgeMind: ${result.action} .codex/AGENTS.md`);
-    })),
-    vscode.commands.registerCommand("forgemind.setupGlobal", () => handleCommand(logger, () => {
-      const result = runGlobalSetup();
-      vscode.window.showInformationMessage(`ForgeMind: ${result.action} global AGENTS.md`);
-    })),
-    vscode.commands.registerCommand("forgemind.doctorGlobal", () => handleCommand(logger, () => {
-      const result = runGlobalDoctor();
-      output.clear();
-      output.appendLine("ForgeMind Global Doctor");
-      output.appendLine("");
-      for (const item of result.results) output.appendLine(item.line);
-      output.show();
+      vscode.window.showInformationMessage(`ForgeMind: ${result.action} .forgemind/instructions.md`);
     })),
     vscode.commands.registerCommand("forgemind.indexWorkspace", () => handleCommand(logger, () => {
       output.clear();

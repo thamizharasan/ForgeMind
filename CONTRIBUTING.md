@@ -32,5 +32,5 @@ fgm --help
 - Keep changes focused.
 - Add or update Node built-in tests for behavior changes.
 - Update README or command docs when user-facing behavior changes.
-- Do not add generated `.codex` artifacts, logs, package tarballs, or `node_modules`.
+- Do not add generated `.forgemind` artifacts, logs, package tarballs, or `node_modules`.
 

@@ -27,7 +27,7 @@ test("query generates relevant.md and ranks auth files above unrelated files", (
   const result = runQuery(root, "what files handle authentication?", { top: 2 });
   assert.equal(result.matches.length, 2);
   assert.match(result.matches[0].path, /auth/);
-  const relevant = fs.readFileSync(path.join(root, ".codex", "context", "relevant.md"), "utf8");
+  const relevant = fs.readFileSync(path.join(root, ".forgemind", "context", "relevant.md"), "utf8");
   assert.match(relevant, /# Relevant Context/);
   assert.doesNotMatch(relevant, /export function loginUser/);
 });
@@ -42,7 +42,7 @@ test("--top limits result count", () => {
 });
 
 test("AGENTS project block references relevant.md first", () => {
-  assert.ok(projectManagedBlock.indexOf(".codex/context/relevant.md") < projectManagedBlock.indexOf(".codex/context/summary.md"));
+  assert.ok(projectManagedBlock.indexOf(".forgemind/context/relevant.md") < projectManagedBlock.indexOf(".forgemind/context/summary.md"));
 });
 
 test("context doctor does not fail when relevant.md is missing", () => {

@@ -89,7 +89,7 @@ function activate(context) {
       const graph = core.runGraphBuild(root, { sessionTracking: sessionTracking() });
       const pack = core.runContextPack(root, { maxSizeKb: contextPackMaxSizeKb(), sessionTracking: sessionTracking() });
       output.appendLine(`Created ${sync.created} missing file(s)`);
-      output.appendLine(`${upgrade.action} .codex/AGENTS.md`);
+      output.appendLine(`${upgrade.action} .forgemind/instructions.md`);
       output.appendLine(`Updated ${path.relative(root, snapshot.file)}`);
       output.appendLine(`Indexed ${index.filesIndexed} file(s)`);
       output.appendLine(`Built graph with ${graph.entityCount} entities and ${graph.relationshipCount} relationships`);
@@ -111,19 +111,7 @@ function activate(context) {
     })),
     vscode.commands.registerCommand("forgemind.upgradeAgents", () => handleCommand(output, (core) => {
       const result = core.runProjectUpgrade(requireWorkspace());
-      vscode.window.showInformationMessage(`ForgeMind: ${result.action} .codex/AGENTS.md`);
-    })),
-    vscode.commands.registerCommand("forgemind.setupGlobal", () => handleCommand(output, (core) => {
-      const result = core.runGlobalSetup();
-      vscode.window.showInformationMessage(`ForgeMind: ${result.action} global AGENTS.md`);
-    })),
-    vscode.commands.registerCommand("forgemind.doctorGlobal", () => handleCommand(output, (core) => {
-      const result = core.runGlobalDoctor();
-      output.clear();
-      output.appendLine("ForgeMind Global Doctor");
-      output.appendLine("");
-      for (const item of result.results) output.appendLine(item.line);
-      output.show();
+      vscode.window.showInformationMessage(`ForgeMind: ${result.action} .forgemind/instructions.md`);
     })),
     vscode.commands.registerCommand("forgemind.indexWorkspace", () => handleCommand(output, (core, logger) => {
       output.clear();

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { storagePath } from "./config.js";
 import { ensureDir } from "./fsSafe.js";
 
 function format(level, message) {
@@ -10,7 +11,7 @@ export function createLogger(options = {}) {
   const verbose = Boolean(options.verbose);
   const sink = options.sink ?? console;
   const root = options.root ?? process.cwd();
-  const logFile = options.logFile ?? path.join(root, ".codex", "logs", "latest.log");
+  const logFile = options.logFile ?? storagePath(root, "logs", "latest.log");
 
   function write(level, message) {
     const line = format(level, message);

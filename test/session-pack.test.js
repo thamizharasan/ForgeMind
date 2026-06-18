@@ -22,7 +22,7 @@ test("session event is appended after index and query commands", () => {
   writeProject(root);
   runContextIndex(root);
   runQuery(root, "login auth");
-  const sessions = fs.readFileSync(path.join(root, ".codex", "memory", "sessions.md"), "utf8");
+  const sessions = fs.readFileSync(path.join(root, ".forgemind", "memory", "sessions.md"), "utf8");
   assert.match(sessions, /Command: index/);
   assert.match(sessions, /Command: query/);
 });
@@ -30,7 +30,7 @@ test("session event is appended after index and query commands", () => {
 test("session tracking failure does not fail main command", () => {
   const root = tempRoot();
   writeProject(root);
-  fs.mkdirSync(path.join(root, ".codex", "memory", "sessions.md"), { recursive: true });
+  fs.mkdirSync(path.join(root, ".forgemind", "memory", "sessions.md"), { recursive: true });
   const result = runContextIndex(root);
   assert.equal(result.ok, true);
   assert.match(result.warnings.join("\n"), /Session tracking failed/);
@@ -40,8 +40,8 @@ test("memory decision and failure aliases write memory files", () => {
   const root = tempRoot();
   runMemoryAddDecision(root, "Keep pack generation deterministic.", { reason: "stable AI handoff", files: "src/core.js" });
   runMemoryAddFailure(root, { failure: "Pack exceeded size", cause: "large summary", fix: "truncate low priority sections", files: "README.md" });
-  assert.match(fs.readFileSync(path.join(root, ".codex", "memory", "decisions.md"), "utf8"), /stable AI handoff/);
-  assert.match(fs.readFileSync(path.join(root, ".codex", "memory", "failures.md"), "utf8"), /truncate low priority/);
+  assert.match(fs.readFileSync(path.join(root, ".forgemind", "memory", "decisions.md"), "utf8"), /stable AI handoff/);
+  assert.match(fs.readFileSync(path.join(root, ".forgemind", "memory", "failures.md"), "utf8"), /truncate low priority/);
 });
 
 test("context pack is generated without source dumps", () => {
@@ -60,14 +60,14 @@ test("context pack is generated without source dumps", () => {
 
 test("context pack respects max size", () => {
   const root = tempRoot();
-  fs.mkdirSync(path.join(root, ".codex", "context"), { recursive: true });
-  fs.writeFileSync(path.join(root, ".codex", "context", "summary.md"), `# Summary\n\n${"x".repeat(10000)}`, "utf8");
+  fs.mkdirSync(path.join(root, ".forgemind", "context"), { recursive: true });
+  fs.writeFileSync(path.join(root, ".forgemind", "context", "summary.md"), `# Summary\n\n${"x".repeat(10000)}`, "utf8");
   const result = runContextPack(root, { maxSizeKb: 1 });
   assert.ok(fs.statSync(result.file).size <= 1024);
 });
 
 test("AGENTS project block references context-pack first", () => {
-  assert.ok(projectManagedBlock.indexOf(".codex/context-pack.md") < projectManagedBlock.indexOf(".codex/context/relevant.md"));
+  assert.ok(projectManagedBlock.indexOf(".forgemind/context-pack.md") < projectManagedBlock.indexOf(".forgemind/context/relevant.md"));
 });
 
 test("compression command fails gracefully when Ollama unavailable", async () => {
@@ -81,8 +81,8 @@ test("compression command fails gracefully when Ollama unavailable", async () =>
 
 test("pack includes session_summary.md when present", () => {
   const root = tempRoot();
-  fs.mkdirSync(path.join(root, ".codex", "memory"), { recursive: true });
-  fs.writeFileSync(path.join(root, ".codex", "memory", "session_summary.md"), "# Session Summary\n\nCompressed handoff.", "utf8");
+  fs.mkdirSync(path.join(root, ".forgemind", "memory"), { recursive: true });
+  fs.writeFileSync(path.join(root, ".forgemind", "memory", "session_summary.md"), "# Session Summary\n\nCompressed handoff.", "utf8");
   const result = runContextPack(root);
   assert.match(fs.readFileSync(result.file, "utf8"), /Compressed handoff/);
 });

@@ -1,9 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
+import { storagePath } from "../utils/config.js";
 import { writeFileAtomic } from "../utils/fsSafe.js";
 
 export function graphDir(root) {
-  return path.join(root, ".codex", "graph");
+  return storagePath(root, "graph");
 }
 
 export function graphPath(root, file) {
