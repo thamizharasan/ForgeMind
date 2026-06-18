@@ -19,7 +19,7 @@
   "author": "Thamizharasan",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-org/forgemind.git"
+    "url": "git+https://github.com/thamizharasan/ForgeMind"
   },
   "files": [
     "bin/",
@@ -177,8 +177,8 @@
     }
   },
   "bugs": {
-    "url": "https://github.com/your-org/forgemind/issues"
+    "url": "https://github.com/thamizharasan/ForgeMind/issues"
   },
-  "homepage": "https://github.com/your-org/forgemind#readme",
+  "homepage": "https://github.com/thamizharasan/ForgeMind#readme",
   "license": "MIT"
 }

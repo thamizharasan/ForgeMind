@@ -112,10 +112,9 @@ fgm --help
 
 VS Code extension local development:
 
-```bash
-npm install
-code .
-```
+
+(YET TO BE ADDED)
+
 
 Press F5, open a test folder in the Extension Development Host, then run ForgeMind commands from the Command Palette.
 
