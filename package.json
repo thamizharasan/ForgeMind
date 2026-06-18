@@ -1,0 +1,193 @@
+{
+  "name": "forgemind",
+  "version": "1.0.0",
+  "description": "Repository Intelligence Engine for AI coding agents",
+  "type": "module",
+  "displayName": "ForgeMind",
+  "keywords": [
+    "repository-intelligence",
+    "context-engine",
+    "ai-agents",
+    "coding-agents",
+    "agent-memory",
+    "knowledge-graph",
+    "codex",
+    "cursor",
+    "claude",
+    "copilot"
+  ],
+  "author": "Thamizharasan",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/forgemind.git"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./src/extension/extension.cjs",
+  "bin": {
+    "forgemind": "bin/forgemind.js",
+    "fgm": "bin/forgemind.js",
+    "codex-context-init": "bin/codex-context-init.js"
+  },
+  "scripts": {
+    "check": "node --check bin/forgemind.js && node --check bin/codex-context-init.js && node --check src/core.js && node --check src/extension/extension.cjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "forgemind.initWorkspace",
+        "title": "ForgeMind: Init Workspace"
+      },
+      {
+        "command": "forgemind.syncWorkspace",
+        "title": "ForgeMind: Sync Current Workspace"
+      },
+      {
+        "command": "forgemind.doctorWorkspace",
+        "title": "ForgeMind: Doctor"
+      },
+      {
+        "command": "forgemind.upgradeAgents",
+        "title": "ForgeMind: Upgrade AGENTS.md"
+      },
+      {
+        "command": "forgemind.setupGlobal",
+        "title": "ForgeMind: Setup Codex Instructions"
+      },
+      {
+        "command": "forgemind.doctorGlobal",
+        "title": "ForgeMind: Doctor Codex Instructions"
+      },
+      {
+        "command": "forgemind.indexWorkspace",
+        "title": "ForgeMind: Index Workspace"
+      },
+      {
+        "command": "forgemind.contextDoctor",
+        "title": "ForgeMind: Doctor Context Artifacts"
+      },
+      {
+        "command": "forgemind.queryRelevant",
+        "title": "ForgeMind: Ask Repository"
+      },
+      {
+        "command": "forgemind.memorySnapshot",
+        "title": "ForgeMind: Memory Snapshot"
+      },
+      {
+        "command": "forgemind.memoryDecision",
+        "title": "ForgeMind: Add Memory Decision"
+      },
+      {
+        "command": "forgemind.memoryFailure",
+        "title": "ForgeMind: Add Memory Failure"
+      },
+      {
+        "command": "forgemind.contextPack",
+        "title": "ForgeMind: Generate Context Pack"
+      },
+      {
+        "command": "forgemind.memoryCompress",
+        "title": "ForgeMind: Compress Memory with Local LLM"
+      },
+      {
+        "command": "forgemind.memoryCompressDoctor",
+        "title": "ForgeMind: Doctor Local LLM Compression"
+      },
+      {
+        "command": "forgemind.memoryDoctor",
+        "title": "ForgeMind: Doctor Repository Memory"
+      },
+      {
+        "command": "forgemind.exportMemoryCodex",
+        "title": "ForgeMind: Export Memory to Codex"
+      },
+      {
+        "command": "forgemind.exportMemoryCursor",
+        "title": "ForgeMind: Export Memory to Cursor"
+      },
+      {
+        "command": "forgemind.exportMemoryClaude",
+        "title": "ForgeMind: Export Memory to Claude Code"
+      },
+      {
+        "command": "forgemind.exportMemoryCopilot",
+        "title": "ForgeMind: Export Memory to GitHub Copilot"
+      },
+      {
+        "command": "forgemind.exportMemoryAll",
+        "title": "ForgeMind: Export Memory to All Agents"
+      },
+      {
+        "command": "forgemind.exportMemoryDoctor",
+        "title": "ForgeMind: Doctor Memory Exports"
+      },
+      {
+        "command": "forgemind.graphBuild",
+        "title": "ForgeMind: Build Knowledge Graph"
+      },
+      {
+        "command": "forgemind.graphDoctor",
+        "title": "ForgeMind: Doctor Knowledge Graph"
+      },
+      {
+        "command": "forgemind.graphClean",
+        "title": "ForgeMind: Clean Knowledge Graph"
+      },
+      {
+        "command": "forgemind.graphImpact",
+        "title": "ForgeMind: Graph Impact Analysis"
+      },
+      {
+        "command": "forgemind.graphQuery",
+        "title": "ForgeMind: Graph Query"
+      }
+    ],
+    "configuration": {
+      "title": "ForgeMind",
+      "properties": {
+        "forgemind.autoIndex": {
+          "type": "boolean",
+          "default": false,
+          "description": "Offer to index ForgeMind context on activation for workspaces with fewer than 1000 eligible files."
+        },
+        "forgemind.watch": {
+          "type": "boolean",
+          "default": false,
+          "description": "Reserved for future context indexing watch mode."
+        },
+        "forgemind.maxFileSizeKb": {
+          "type": "number",
+          "default": 300,
+          "description": "Maximum file size, in KB, to include in ForgeMind context indexing."
+        },
+        "forgemind.sessionTracking.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable best-effort session event logging to .codex/memory/sessions.md."
+        },
+        "forgemind.contextPack.maxSizeKb": {
+          "type": "number",
+          "default": 40,
+          "description": "Maximum size, in KB, for generated .codex/context-pack.md."
+        }
+      }
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/forgemind/issues"
+  },
+  "homepage": "https://github.com/your-org/forgemind#readme",
+  "license": "MIT"
+}

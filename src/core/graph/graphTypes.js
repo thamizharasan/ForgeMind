@@ -1,0 +1,27 @@
+export const GRAPH_SCHEMA_VERSION = 1;
+
+export const ENTITY_TYPES = {
+  FILE: "file",
+  MODULE: "module",
+  SYMBOL: "symbol",
+  ROUTE: "route",
+  DEPENDENCY: "dependency",
+  MEMORY_DECISION: "memory_decision",
+  MEMORY_FAILURE: "memory_failure",
+  MEMORY_FIX: "memory_fix",
+  MEMORY_SESSION: "memory_session"
+};
+
+export const RELATIONSHIP_TYPES = {
+  CONTAINS: "CONTAINS",
+  IMPORTS: "IMPORTS",
+  EXPORTS: "EXPORTS",
+  DEFINES: "DEFINES",
+  DECLARES_ROUTE: "DECLARES_ROUTE",
+  DEPENDS_ON: "DEPENDS_ON",
+  MENTIONS: "MENTIONS",
+  CHANGED_IN: "CHANGED_IN",
+  DECISION_RELATES_TO: "DECISION_RELATES_TO",
+  FAILURE_RELATES_TO: "FAILURE_RELATES_TO",
+  FIX_RELATES_TO: "FIX_RELATES_TO"
+};
